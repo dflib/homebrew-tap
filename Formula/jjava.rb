@@ -5,43 +5,47 @@
 class Jjava < Formula
   desc "Jupyter kernel for java notebooks"
   homepage "https://github.com/dflib/jjava"
-  url "https://github.com/dflib/jjava/releases/download/1.0-a4/jjava-1.0-a4-kernelspec.zip"
-  version "1.0-a4"
-  sha256 "097f9a3db2ae77d22971bf7d041850c216f8b2a4da9cffda65a9334a6077bc12"
+  url "https://github.com/dflib/jjava/releases/download/1.0-a5/jjava-1.0-a5-kernelspec.zip"
+  sha256 "2056a474c916ea90839fd73375e2ba852628ba7315d6277779c2488ce9409251"
   license "MIT"
 
   depends_on "expect" => :test
-  depends_on "jupyterlab"
+  depends_on "jupyterlab" => :test
 
   def install
     libexec.install Dir["*.jar"]
     config = buildpath/"kernel.json"
     inreplace config, "{resource_dir}", libexec
-    system "jupyter kernelspec install #{buildpath} --config=#{config} --sys-prefix --name=java"
+    (share/"jupyter/kernels/java").install config
+  end
+
+  def caveats
+    kernel_path = share/"jupyter"
+    <<~EOS
+      The installation of the Homebrew package takes place in an isolated environment, so ensure JJava visibility by running:
+        echo 'export JUPYTER_PATH="#{kernel_path}:$JUPYTER_PATH"' >> ~/.zshrc; source ~/.zshrc (macOS)
+        echo 'export JUPYTER_PATH="#{kernel_path}:$JUPYTER_PATH"' >> ~/.bashrc; source ~/.bashrc (Linux)
+      Although JJava doesn't depend on java, it requires jre>=11 to run.
+      Make sure you have one in your PATH.
+    EOS
   end
 
   test do
     jupyter = Formula["jupyterlab"].opt_bin/"jupyter"
+    ENV["JUPYTER_PATH"] = share/"jupyter"
     assert_match " java ", shell_output("#{jupyter} kernelspec list")
 
     (testpath/"console.exp").write <<~EOS
       spawn #{jupyter} console --kernel=java
       expect -timeout 30 "In "
-      send "System.out.println(\\\"Hello world!\\\");\r"
+      send {System.out.println("Hello world!");\r}
       expect -timeout 10 "In "
       send "\u0004"
       expect -timeout 10 "exit"
       send "y\r"
-      EOS
+    EOS
     output = shell_output("expect -f console.exp")
     assert_match "JJava kernel #{version}", output
     assert_match "Hello world!", output
-  end
-
-  def caveats
-    <<~EOS
-      Although JJava doesn't depend on java, it requires jre>=11 to run.
-      Make sure you have one in your PATH.
-    EOS
   end
 end
