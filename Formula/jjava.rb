@@ -5,8 +5,8 @@
 class Jjava < Formula
   desc "Jupyter kernel for java notebooks"
   homepage "https://github.com/dflib/jjava"
-  url "https://github.com/dflib/jjava/releases/download/1.0-a7/jjava-1.0-a7-kernelspec.zip"
-  sha256 "74d23fe8d559d111206d6e4d920bd0f4a6ccb787bb5136f9578589b657712acc"
+  url "https://github.com/dflib/jjava/releases/download/1.0-a8/jjava-1.0-a8-kernelspec.zip"
+  sha256 "1c58fd09720578aec57321d812f613f1a133634cee783b01a02acfac9497ee82"
   license "Apache-2.0"
 
   depends_on "expect" => :test
